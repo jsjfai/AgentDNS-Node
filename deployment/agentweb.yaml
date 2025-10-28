@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentweb
+  namespace: agentweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentweb
+  template:
+    metadata:
+      labels:
+        app: agentweb
+    spec:
+      containers:
+      - name: agentweb
+        image: registry.cn-jssz1.ctyun.cn/aidev/agentweb:v0.0.4
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: agentweb-config
+          mountPath: /app/mcp_settings.json
+          subPath: agentweb.mcp_settings.json
+      volumes:
+      - name: agentweb-config
+        hostPath:
+          path: /home/jfaiuser/mcp_settings # /home/jfaiuser/mcp_settings.json is the config file
+          type: Directory
+      imagePullSecrets:
+      - name: agentweb-auth
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentweb-service
+  namespace: agentweb
+spec:
+  selector:
+    app: agentweb
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+      nodePort: 30003
+  type: NodePort

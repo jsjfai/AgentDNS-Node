@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: agentweb
+  labels:
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: docker.m.daocloud.io/pgvector/pgvector:pg17
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASSWORD
+              value: password
+            - name: POSTGRES_DB
+              value: agentweb_db
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+            - name: init-scripts  # 新增：挂载初始化脚本目录
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: infra-postgres-pvc
+        - name: init-scripts  # 新增：定义初始化脚本卷
+          configMap:
+            name: postgres-init-scripts  # 对应下面的ConfigMap名称
+---
+# 新增：包含初始化SQL脚本的ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-init-scripts
+  namespace: agentweb
+data:
+  init.sql: |  # 你的初始化SQL脚本内容
+    -- 启用 pgvector 扩展
+    CREATE EXTENSION IF NOT EXISTS vector;
+
+    -- 创建示例表
+    CREATE TABLE items (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        embedding vector(1536) -- vector 数据
+    );
