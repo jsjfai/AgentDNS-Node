@@ -208,6 +208,11 @@ proxy_buffering off
 - **Auth**: JWT & bcrypt
 - **Protocol**: Model Context Protocol SDK
 
+## 🙏🏻 Thanks
+
+This project is developed based on the following awesome projects:
+- [McpHub](https://github.com/samanhappy/mcphub)
+
 ## 📄 License
 
 Licensed under the [Apache 2.0 License](LICENSE).

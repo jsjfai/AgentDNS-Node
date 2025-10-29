@@ -208,6 +208,12 @@ proxy_buffering off
 - **认证**：JWT & bcrypt
 - **协议**：Model Context Protocol SDK
 
+## 🙏🏻 感谢
+
+本项目的构建得益于以下优秀的开源项目:
+
+- [McpHub](https://github.com/samanhappy/mcphub)
+
 ## 📄 许可证
 
 本项目采用 [Apache 2.0 许可证](LICENSE)。
