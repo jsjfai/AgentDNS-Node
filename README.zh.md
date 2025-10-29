@@ -1,3 +1,7 @@
+<p align='center'>
+<img src='./resources/icon.png' width="150" height="150" alt="AgentDNS Icon" />
+</p>
+
 # Agentweb：智能体互联网：一站式智能体服务器互联互通平台
 
 [English Version](README.md) | 中文版
