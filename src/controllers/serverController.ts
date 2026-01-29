@@ -12,6 +12,7 @@ import {
 import { loadSettings, saveSettings } from '../config/index.js';
 import { syncAllServerToolsEmbeddings } from '../services/vectorSearchService.js';
 import { createSafeJSON } from '../utils/serialization.js';
+import { isServerModificationAllowed } from '../utils/permissionUtils.js';
 
 export const getAllServers = (_: Request, res: Response): void => {
   try {
@@ -47,6 +48,15 @@ export const getAllSettings = (_: Request, res: Response): void => {
 };
 
 export const createServer = async (req: Request, res: Response): Promise<void> => {
+  // 添加环境变量检查作为第一个验证步骤
+  if (!isServerModificationAllowed()) {
+    res.status(403).json({
+      success: false,
+      message: 'Server creation is disabled by administrator',
+    });
+    return;
+  }
+  
   try {
     const { name, config } = req.body as AddServerRequest;
     if (!name || typeof name !== 'string') {
@@ -80,10 +90,19 @@ export const createServer = async (req: Request, res: Response): Promise<void> =
     }
 
     // Validate the server type if specified
-    if (config.type && !['stdio', 'sse', 'streamable-http', 'openapi'].includes(config.type)) {
+    // disable stdio
+    if (config.type && !['sse', 'streamable-http', 'openapi'].includes(config.type)) {
       res.status(400).json({
         success: false,
-        message: 'Server type must be one of: stdio, sse, streamable-http, openapi',
+        message: 'Server type must be one of: sse, streamable-http, openapi',
+      });
+      return;
+    }
+
+    if (config.command) {
+      res.status(400).json({
+        success: false,
+        message: 'Stdio (command) is not support to create',
       });
       return;
     }
@@ -189,6 +208,15 @@ export const deleteServer = async (req: Request, res: Response): Promise<void> =
 };
 
 export const updateServer = async (req: Request, res: Response): Promise<void> => {
+  // 添加环境变量检查作为第一个验证步骤
+  if (!isServerModificationAllowed()) {
+    res.status(403).json({
+      success: false,
+      message: 'Server modification is disabled by administrator',
+    });
+    return;
+  }
+  
   try {
     const { name } = req.params;
     const { config } = req.body;
@@ -223,10 +251,11 @@ export const updateServer = async (req: Request, res: Response): Promise<void> =
     }
 
     // Validate the server type if specified
-    if (config.type && !['stdio', 'sse', 'streamable-http', 'openapi'].includes(config.type)) {
+    // disable stdio
+    if (config.type && !['sse', 'streamable-http', 'openapi'].includes(config.type)) {
       res.status(400).json({
         success: false,
-        message: 'Server type must be one of: stdio, sse, streamable-http, openapi',
+        message: 'Server type must be one of: sse, streamable-http, openapi',
       });
       return;
     }
